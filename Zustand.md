@@ -199,6 +199,20 @@ set(newState, true)
 set(newState, { replace: true })
 ```
 
+### 5. When to use `get()` / `getState()`
+
+- **Inside the store definition (`create((set, get) => ...)`)**
+  - Use `get()` when an action needs the *latest* state snapshot, especially for logic that depends on current values or runs asynchronously (to avoid stale closures).
+  - Example: `const count = get().count` before deciding how to `set`.
+
+- **Outside React (vanilla code, services, utilities)**
+  - Use `useStore.getState()` (or `store.getState()` for vanilla stores) in non-React modules: API clients, event handlers, WebSocket callbacks, logging, etc.
+  - This gives you the current state without subscribing anything to updates.
+
+- **Inside React components (rarely)**
+  - For rendering UI, **do not** rely on `getState()` because it doesn’t subscribe the component to updates. Prefer `useStore((state) => state.someField)` or generated selectors.
+  - Only reach for `getState()` in components for true one-off reads where you explicitly don’t want re-renders (which is uncommon).
+
 ## Advanced Patterns
 
 ### Pattern 1: Actions Outside the Store
@@ -764,6 +778,14 @@ const unsubscribe = useStore.subscribe((state) => {
   console.log('State changed:', state)
 })
 ```
+
+Simple set((state) => state.count + 3)
+cannot work with async
+
+
+set cannot call store action
+set cannot put promise call
+set in an action does not always happen
 
 ## Resources
 
