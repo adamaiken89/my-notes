@@ -128,4 +128,4 @@ Software Design -> OOP -> Best Practices & Design Patterns
   - (Book) [Design Patterns: Elements of Reusable Object-Oriented Software](https://www.oreilly.com/library/view/design-patterns-elements/0201633612)
   - (Website) [Refactoring Guru (Design Patterns)](https://refactoring.guru/design-patterns)
 
-https://www.baeldung.com/java-static-methods-use-cases
+<https://www.baeldung.com/java-static-methods-use-cases>

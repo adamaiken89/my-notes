@@ -54,7 +54,6 @@ Formal grammar for CSS property/function values (MDN, W3C specs)
 
 - Reference: <https://developer.mozilla.org/en-US/docs/Web/CSS/Value_definition_syntax>
 
-
 ## Good Property
 
 - initial

@@ -101,6 +101,6 @@ directives - additional information
 ## Reference
 
 - What is GraphQL - <https://www.ibm.com/think/topics/graphql>
-- https://www.howtographql.com/basics/1-graphql-is-the-better-rest
-- https://graphql.com
-- https://graphql.org
+- <https://www.howtographql.com/basics/1-graphql-is-the-better-rest>
+- <https://graphql.com>
+- <https://graphql.org>

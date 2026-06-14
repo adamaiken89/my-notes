@@ -53,7 +53,6 @@ Tell users where are they out of the current options
 - font weight
 - different color
 
-
 ## Reference
 
 - Refactoring UI

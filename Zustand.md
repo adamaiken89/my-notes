@@ -145,15 +145,25 @@ Split large stores into smaller, focused stores or use the slice pattern (see be
 
 ### 2. Reference Actions as Functions
 
-When selecting actions, reference them directly to avoid unnecessary re-renders:
+When selecting actions, reference them directly to get a **stable function reference**:
 
 ```typescript
-// ✅ Good: Stable function reference
+// ✅ Good: Stable reference — same function identity across renders
 const increment = useCountStore((state) => state.increment)
 
-// ❌ Bad: Creates new function reference
+// ❌ Bad: New arrow function on every render
 const increment = () => useCountStore.getState().increment()
 ```
+
+**Why the bad pattern is harmful:**
+
+The `() => useCountStore.getState().increment()` expression creates a **new arrow function every render**. This causes:
+
+- **Broken memoization** — if passed to a `React.memo` child, the child re-renders because the prop (the new function) changes every time
+- **Spurious effect re-runs** — if used in `useEffect`/`useCallback` dependencies, the effect fires on every render
+- **Unnecessary child work** — even without memo, any component receiving the function as a prop allocates and garbage-collects the closure each frame
+
+The selector form `useCountStore((s) => s.increment)` returns the **same function reference** that was defined in the store creator, so it's stable for the entire lifetime of the store (unless the store itself replaces the action).
 
 ### 3. Using Immer for Complex Updates
 
@@ -210,7 +220,7 @@ set(newState, { replace: true })
   - This gives you the current state without subscribing anything to updates.
 
 - **Inside React components (rarely)**
-  - For rendering UI, **do not** rely on `getState()` because it doesn’t subscribe the component to updates. Prefer `useStore((state) => state.someField)` or generated selectors.
+  - For rendering UI, **do not** rely on `getState()` because it doesn't subscribe the component to updates. Prefer `useStore((state) => state.someField)` or generated selectors.
   - Only reach for `getState()` in components for true one-off reads where you explicitly don’t want re-renders (which is uncommon).
 
 ## Advanced Patterns
@@ -779,13 +789,424 @@ const unsubscribe = useStore.subscribe((state) => {
 })
 ```
 
-Simple set((state) => state.count + 3)
-cannot work with async
+### `set` Gotchas
 
+- **Always return an object:** `set((state) => ({ count: state.count + 3 }))` — returning a bare value is a no-op
+- **Don't use `async` updaters:** `set(async (state) => ({ ... }))` doesn't work — do the async work outside `set`, then call `set` with the result
+- **`set` only sets state:** use it to update values, not to call other store actions (call those directly)
+- **Don't put promises in state:** resolve async data before calling `set`; storing a pending Promise breaks serialization and selectors
+- **`set` is synchronous but re-renders are batched:** React may batch multiple `set` calls into a single render — rely on `get()` if you need the absolute latest state in a subsequent action
 
-set cannot call store action
-set cannot put promise call
-set in an action does not always happen
+## Zustand vs Signals
+
+### Preact Signals in React
+
+Signals (via `@preact/signals-react`) take a different approach: **fine-grained reactivity at the value level**, not the component level.
+
+```typescript
+// Signals approach
+import { signal, computed } from '@preact/signals-react'
+
+const count = signal(0)
+const doubled = computed(() => count.value * 2)
+
+function Counter() {
+  // No selector — auto-tracked at the .value read site
+  return <p>{doubled.value}</p>
+}
+
+function Controls() {
+  return <button onClick={() => count.value++}>+1</button>
+}
+```
+
+```typescript
+// Zustand equivalent
+import { create } from 'zustand'
+
+const useStore = create<{ count: number; doubled: number; inc: () => void }>()(
+  (set) => ({
+    count: 0,
+    get doubled() {
+      return this.count * 2
+    },
+    inc: () => set((s) => ({ count: s.count + 1 })),
+  })
+)
+
+function Counter() {
+  const doubled = useStore((s) => s.doubled)
+  return <p>{doubled}</p>
+}
+```
+
+### Key Differences
+
+| Aspect | Zustand | Preact Signals |
+| --- | --- | --- |
+| **Reactivity model** | Subscribe + selector (component-level) | Push-based granular (value-level) |
+| **Re-render scope** | Whole component re-renders | Pinpoint DOM updates (with Babel transform) |
+| **Setup** | Zero config | Requires Babel transform or `useSignals()` call |
+| **Outside React** | `getState()` / `subscribe()` | `.value` read + `effect()` |
+| **Derived state** | Manual selector or `get` + computed | `computed()` — auto-tracking, no deps array |
+| **Middleware** | persist, devtools, immer, etc. | None (bring your own) |
+| **DevTools** | Redux DevTools via `devtools()` | None built-in |
+| **Bundle** | ~1KB | ~3KB (signals-core + react adapter) |
+
+### TC39 Signals (ECMAScript 2026)
+
+The [TC39 Signals Proposal](https://github.com/tc39/proposal-signals) reached Stage 4 and is part of ECMAScript 2026. Its primitives:
+
+```typescript
+// TC39 Signals (native)
+const count = new Signal.State(0)
+const doubled = new Signal.Computed(() => count.get() * 2)
+
+new Signal.Effect(() => console.log('count:', count.get()))
+```
+
+This is **not a direct user-facing API** — it's designed for frameworks to build upon. Think of it like Promises: you rarely write `new Promise((resolve) => ...)` directly when using async/await. Similarly, React/Zustand/etc. would adopt TC39 signals under the hood.
+
+**What changes for Zustand users?** Probably nothing directly. Zustand could internally use `Signal.State` for its store to achieve better interop, but the API you write (`create`, `set`, `get`) stays the same.
+
+### When to use which
+
+- **Zustand** — global app state, cross-component shared state, state with side-effect middleware (persist, devtools), vanilla JS modules
+- **Signals** — high-frequency updates (animations, real-time data), you want automatic fine-grained reactivity, building a new project that can use the Babel transform
+- **Both** — not uncommon. A signal-based derived value can read from a Zustand store via `subscribe`, and Zustand actions can write to signals.
+
+---
+
+## Zustand: Actual Pros and Cons (with Examples)
+
+### ✅ Pros
+
+#### 1. Tiny Bundle, Zero Config
+
+```text
+// package.json size comparison (gzipped)
+zustand:      ~1 KB
+@reduxjs/toolkit: ~11 KB
+recoil:       ~19 KB
+@preact/signals-react: ~3 KB
+```
+
+Just `npm install zustand` — no providers, no Babel plugins, no `index.tsx` changes.
+
+#### 2. Works Outside React
+
+This is the single biggest differentiator vs hooks-based solutions:
+
+```typescript
+// ✅ Zustand: Read/write from anywhere
+import { useAuthStore } from './stores/auth'
+
+// In an API interceptor
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.status === 401) {
+      useAuthStore.getState().logout() // works outside React
+      navigate('/login')
+    }
+    return Promise.reject(err)
+  }
+)
+
+// In a WebSocket handler
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data)
+  useChatStore.getState().addMessage(data) // no component needed
+}
+```
+
+Signals can do this too (.value outside React), but Preact Signals for React needs the component to call `useSignals()` or use the Babel transform to track dependencies.
+
+#### 3. Selector-Based Re-render Control
+
+You decide exactly what a component subscribes to — no magic:
+
+```typescript
+const useStore = create(() => ({
+  user: { name: 'Alice', avatar: 'alice.png' },
+  notifications: [],
+  theme: 'dark',
+}))
+
+// ✅ Only re-renders when user.name changes
+const name = useStore((s) => s.user.name)
+
+// ✅ Only re-renders when notifications change
+const unread = useStore((s) => s.notifications.filter((n) => !n.read).length)
+
+// ✅ Never re-renders (stable reference)
+const updateUser = useStore((s) => s.updateUser)
+
+// ✅ Shallow compare multiple values
+import { shallow } from 'zustand/shallow'
+const [name, theme] = useStore(
+  (s) => ({ name: s.user.name, theme: s.theme }),
+  shallow
+)
+```
+
+Compare to signals where `.value` reads are auto-tracked — convenient but can be surprising when you read a signal inside a callback or an `effect()` and unintentionally subscribe to it.
+
+#### 4. Middleware Ecosystem
+
+Built-in middleware that works out of the box:
+
+```typescript
+import { create } from 'zustand'
+import { persist, devtools, subscribeWithSelector } from 'zustand/middleware'
+import { immer } from 'zustand/middleware/immer'
+
+const useStore = create(
+  devtools(
+    persist(
+      immer((set) => ({
+        todos: [],
+        addTodo: (text) =>
+          set((state) => {
+            state.todos.push({ id: Date.now(), text, done: false })
+            // Immer allows "mutative" syntax
+          }),
+      })),
+      { name: 'todos' }
+    ),
+    { name: 'TodoStore' }
+  )
+)
+```
+
+With signals, you'd need to wire up persistence, devtools, and immer manually.
+
+#### 5. Predictable, Explicit Updates
+
+State only changes when you call `set()` — no proxy magic, no hidden mutations:
+
+```typescript
+// Zustand: you see exactly where state changes
+set((state) => ({ count: state.count + 1 }))
+
+// Valtio: mutation-based (proxied)
+state.count++ // fine, but harder to trace who mutated what
+
+// Signals: .value assignment
+count.value++ // also mutation-based at the signal level
+```
+
+This makes Zustand easier to debug, test, and reason about in large codebases.
+
+---
+
+### ❌ Cons
+
+#### 1. Manual Selector Optimization (Footgun)
+
+Get selectors wrong and you cause infinite re-renders or over-subscription:
+
+```typescript
+// ❌ BAD: New object every render → infinite loop
+const { count, text } = useStore((state) => ({
+  count: state.count,
+  text: state.text,
+}))
+
+// ❌ BAD: Pulling entire store → re-renders on ANY change
+const store = useStore()
+
+// ❌ BAD: Destructuring the hook result
+const { count, increment } = useStore()
+
+// ✅ Fix: atomic selectors
+const count = useStore((s) => s.count)
+const text = useStore((s) => s.text)
+
+// ✅ Fix: shallow comparison
+import { shallow } from 'zustand/shallow'
+const { count, text } = useStore(
+  (s) => ({ count: s.count, text: s.text }),
+  shallow
+)
+```
+
+Signals avoid this entirely — auto-tracking guarantees you only re-run what reads the signal.
+
+#### 2. No Built-in Derived State
+
+Zustand has no `computed()` equivalent. You must DIY:
+
+```typescript
+// Zustand: manual derived state (two approaches)
+
+// Approach A: Compute in selector (⚠️ expensive if called many times)
+const useFilteredTodos = () => {
+  const todos = useStore((s) => s.todos)
+  const filter = useStore((s) => s.filter)
+  return useMemo(() => todos.filter((t) => matches(t, filter)), [todos, filter])
+}
+
+// Approach B: Store computed values manually (⚠️ must keep in sync)
+const useStore = create((set) => ({
+  todos: [],
+  filter: 'all',
+  filteredTodos: [],
+  setFilter: (filter) =>
+    set((state) => ({
+      filter,
+      filteredTodos: state.todos.filter((t) => matches(t, filter)),
+    })),
+  addTodo: (text) =>
+    set((state) => ({
+      todos: [...state.todos, { id: Date.now(), text, done: false }],
+      filteredTodos: [...state.todos, { id: Date.now(), text, done: false }]
+        .filter((t) => matches(t, state.filter)),
+    })),
+}))
+
+// Signals / Jotai: computed is built-in
+const count = signal(0)
+const doubled = computed(() => count.value * 2) // auto-derived, auto-cached
+```
+
+With Zustand's `subscribeWithSelector` middleware you can build your own reactivity, but it's not ergonomic.
+
+#### 3. Multiple Stores Can Create Coordination Pain
+
+Zustand encourages small stores, but cross-store logic requires manual wiring:
+
+```typescript
+// Two stores that need to coordinate
+const useCartStore = create(() => ({ items: [], total: 0 }))
+const useAuthStore = create(() => ({ user: null }))
+
+// Action that depends on both stores
+const checkout = () => {
+  const user = useAuthStore.getState().user
+  if (!user) throw new Error('Not logged in')
+
+  const items = useCartStore.getState().items
+  // ... submit order
+}
+
+// To subscribe to both changes:
+useCartStore.subscribe(
+  (items) => console.log('cart changed'),
+  (s) => s.items
+)
+useAuthStore.subscribe(
+  (user) => console.log('user changed'),
+  (s) => s.user
+)
+```
+
+With signals, you'd create a `computed(() => ...)` that reads from both — auto-tracking handles the cross-store dependency for free.
+
+#### 4. Selectors Break with Destructuring / Rest
+
+```typescript
+// ❌ Destructuring subscribes to the full object
+const { name, ...rest } = useStore((s) => s.user)
+// rest contains everything in user — any user prop change re-renders
+
+// ✅ Fix: be explicit
+const name = useStore((s) => s.user.name)
+const rest = useStore((s) => {
+  const { name, ...rest } = s.user
+  return rest
+}, shallow)
+```
+
+This is tedious and error-prone. Signals don't have this problem — each `.value` read is independently tracked.
+
+#### 5. No Built-in Async / Suspense Support
+
+Zustand is synchronous. Async flows are manual:
+
+```typescript
+// Zustand: async action
+const useStore = create((set) => ({
+  data: null,
+  loading: false,
+  error: null,
+  fetchData: async () => {
+    set({ loading: true })
+    try {
+      const data = await api.get('/data')
+      set({ data, loading: false })
+    } catch (error) {
+      set({ error, loading: false })
+    }
+  },
+}))
+
+// TanStack Query: handles caching, dedup, refetch, suspense, etc.
+function useData() {
+  return useQuery({
+    queryKey: ['data'],
+    queryFn: () => api.get('/data'),
+  })
+}
+```
+
+Zustand's docs explicitly recommend **TanStack Query for server state** and Zustand for client state. Signals don't solve this either — you'd still reach for TanStack Query or a similar tool.
+
+#### 6. No Context-Like Scoping (Without Extra Work)
+
+Zustand stores are global singletons. To get scoped instances (e.g., one store per form, per feature, per user session), you must use React Context:
+
+```typescript
+// Scoped Zustand store with Context
+import { createContext, useContext } from 'react'
+import { createStore, useStore } from 'zustand'
+
+const FormContext = createContext(null)
+
+const FormProvider = ({ children }) => {
+  const storeRef = useRef(createStore((set) => ({
+    values: {},
+    errors: {},
+    setField: (name, value) =>
+      set((s) => ({ values: { ...s.values, [name]: value } })),
+  })))
+
+  return (
+    <FormContext.Provider value={storeRef.current}>
+      {children}
+    </FormContext.Provider>
+  )
+}
+
+const useFormStore = (selector) => {
+  const store = useContext(FormContext)
+  if (!store) throw new Error('Missing FormProvider')
+  return useStore(store, selector)
+}
+```
+
+With signals, you can scope them by just declaring them in the right closure/module — no Context needed. But for React, you'd still need some mechanism to tie signal lifecycle to component lifecycle.
+
+---
+
+### Summary Table
+
+| Concern | Zustand | Signals | Winner |
+| --- | --- | --- | --- |
+| Bundle size | ~1 KB | ~3 KB | Zustand |
+| Re-render granularity | Component | Value/DOM | Signals |
+| Learning curve | Low | Medium (Babel, auto-tracking) | Zustand |
+| Outside React | Excellent | Good | Zustand |
+| Middleware | Built-in | None | Zustand |
+| DevTools | Redux DevTools | None | Zustand |
+| Derived state | Manual | `computed()` built-in | Signals |
+| Selector correctness | Manual (footgun) | Auto-tracked | Signals |
+| Scoped/Context stores | Extra work | Natural | Signals |
+| Async server state | Not its job | Not its job | Tie (use TanStack Query) |
+| Ecosystem maturity | Battle-tested (5+ years) | Evolving | Zustand |
+| TC39 future proof | Adapter possible | Language-native | Signals |
+
+**Bottom line:** Zustand is the pragmatic choice today for most React apps — zero-config, tiny, works everywhere, and pairs perfectly with TanStack Query. Signals offer a more elegant reactivity model but require Babel transforms and are still maturing in the React ecosystem. Once TC39 signals land natively and React adopts them, the landscape may shift — but that's years away.
 
 ## Resources
 
