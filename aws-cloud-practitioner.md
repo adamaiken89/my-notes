@@ -451,7 +451,7 @@ Local temporary storage
 - Connect TWO VPCs
 - Treat as the same network
 - Not transitive (must be established for each VPC)
-- A <-> B & B <-> C DOES NOT imply A <-> C
+- `A <-> B & B <-> C DOES NOT imply A <-> C`
 
 **VPC Endpoints:**
 
@@ -619,7 +619,7 @@ Billing metrics on US-EAST-1
 
 DNS Service
 
-A Record -> hostname to IP
+`A Record` -> hostname to IP
 
 **Routing Policies:**
 
@@ -687,7 +687,7 @@ A Record -> hostname to IP
 - Edge of the 5G network
 - Carrier Gateway
 - Low-latency
-- A wavelength zone from Available Zone
+- wavelength zone from Available Zone
 
 **Local Zones:**
 

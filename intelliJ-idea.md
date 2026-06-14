@@ -1,6 +1,6 @@
 # IntelliJ Idea
 
-- The best Java editor, period
+- best Java editor, period
 - Understanding the features and shortcuts can greatly boost your productivity
 
 ## Features
@@ -73,7 +73,8 @@
 
 - Use `Alt+Enter` for context-aware code fixes and suggestion, including implementing unimplemented methods, importing missing classes, and converting loops/lambdas.
 
-> Pro Tip: Right-click a method or class for "Refactor" menu – use "Rename", "Change Signature", "Move", etc.
+> Pro Tip: Right-click a method or class for "Refactor" menu – use "Rename",
+  "Change Signature", "Move", etc.
 
 ## Plugins
 

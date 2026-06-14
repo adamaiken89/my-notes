@@ -2,7 +2,7 @@
 
 ## ConEmu
 
-- A smarter terminal (a bit slow) - check [official website](https://conemu.github.io)
+- smarter terminal (a bit slow) - check [official website](https://conemu.github.io)
 
 - Color Schema - Monokai
 

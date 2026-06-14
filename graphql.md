@@ -3,8 +3,8 @@
 ## Practical definition
 
 - GraphQL is a specification describes
-- A specific endpoint and http verb (i.e. POST) over HTTP
-- A structural JSON object in body to fetch or manipulate data
+- specific endpoint and http verb (i.e. POST) over HTTP
+- structural JSON object in body to fetch or manipulate data
 
 ## What others protocol does not specify
 
@@ -12,7 +12,7 @@
 
 ## How it is different from other ways
 
-- A schema is always required
+- schema is always required
 - Based on the schema it can generate the API specification
 
 ## Introspection

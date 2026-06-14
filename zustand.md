@@ -38,14 +38,14 @@ function Controls() {
 **Key Points:**
 
 - With types, recommend separating `State` and `Actions` to isolate variables and methods
-- The store hook can be called with a `selector` function: `useCountStore((state) => state.count)`
+- store hook can be called with a `selector` function: `useCountStore((state) => state.count)`
 - Only components using selected state will re-render when that state changes
-- Actions are just functions that call `set` to update state
+- Actions are functions that call `set` to update state
 
 ## Why Zustand?
 
 - **Avoid prop drilling**: Share state across components without passing props through multiple levels
-- **Simplify Redux flow**: No reducers, actions, or dispatch - just direct state updates
+- **Simplify Redux flow**: No reducers, actions, or dispatch - direct state updates
 - **No Context Provider needed**: Works without wrapping your app in providers
 - **Better performance**: Uses selectors to prevent unnecessary re-renders
 - **Works outside React**: Can be used in vanilla JS/TS applications
@@ -54,7 +54,7 @@ function Controls() {
 
 ### 1. Store Creation
 
-A Zustand store is created using the `create` function. It takes a function that receives `set` (and optionally `get`) and returns the initial state and actions.
+Zustand store is created using the `create` function. It takes a function that receives `set` (and optionally `get`) and returns the initial state and actions.
 
 ```typescript
 const useCountStore = create<State & Actions>()((set, get) => ({
@@ -157,13 +157,13 @@ const increment = () => useCountStore.getState().increment()
 
 **Why the bad pattern is harmful:**
 
-The `() => useCountStore.getState().increment()` expression creates a **new arrow function every render**. This causes:
+`() => useCountStore.getState().increment()` expression creates a **new arrow function every render**. This causes:
 
 - **Broken memoization** — if passed to a `React.memo` child, the child re-renders because the prop (the new function) changes every time
 - **Spurious effect re-runs** — if used in `useEffect`/`useCallback` dependencies, the effect fires on every render
 - **Unnecessary child work** — even without memo, any component receiving the function as a prop allocates and garbage-collects the closure each frame
 
-The selector form `useCountStore((s) => s.increment)` returns the **same function reference** that was defined in the store creator, so it's stable for the entire lifetime of the store (unless the store itself replaces the action).
+selector form `useCountStore((s) => s.increment)` returns the **same function reference** that was defined in the store creator, so it's stable for the entire lifetime of the store (unless the store itself replaces the action).
 
 ### 3. Using Immer for Complex Updates
 
@@ -270,7 +270,7 @@ function Component() {
 
 ### Pattern 2: Slice Pattern
 
-The slice pattern allows you to split a large store into smaller, manageable pieces. Each slice is a function that receives `set` and `get` and returns a partial store.
+slice pattern allows you to split a large store into smaller, manageable pieces. Each slice is a function that receives `set` and `get` and returns a partial store.
 
 **Benefits:**
 
@@ -412,7 +412,7 @@ const increment = useBearStore.use.increment()
 
 ### Pattern 4: Using `combine` Middleware
 
-The `combine` middleware separates state and actions more explicitly:
+`combine` middleware separates state and actions more explicitly:
 
 ```typescript
 import { create } from 'zustand'
@@ -855,7 +855,7 @@ function Counter() {
 
 ### TC39 Signals (ECMAScript 2026)
 
-The [TC39 Signals Proposal](https://github.com/tc39/proposal-signals) reached Stage 4 and is part of ECMAScript 2026. Its primitives:
+[TC39 Signals Proposal](https://github.com/tc39/proposal-signals) reached Stage 4 and is part of ECMAScript 2026. Its primitives:
 
 ```typescript
 // TC39 Signals (native)
@@ -1185,7 +1185,7 @@ const useFormStore = (selector) => {
 }
 ```
 
-With signals, you can scope them by just declaring them in the right closure/module — no Context needed. But for React, you'd still need some mechanism to tie signal lifecycle to component lifecycle.
+With signals, you can scope them by declaring them in the right closure/module — no Context needed. But for React, you'd still need some mechanism to tie signal lifecycle to component lifecycle.
 
 ---
 
@@ -1206,7 +1206,8 @@ With signals, you can scope them by just declaring them in the right closure/mod
 | Ecosystem maturity | Battle-tested (5+ years) | Evolving | Zustand |
 | TC39 future proof | Adapter possible | Language-native | Signals |
 
-**Bottom line:** Zustand is the pragmatic choice today for most React apps — zero-config, tiny, works everywhere, and pairs perfectly with TanStack Query. Signals offer a more elegant reactivity model but require Babel transforms and are still maturing in the React ecosystem. Once TC39 signals land natively and React adopts them, the landscape may shift — but that's years away.
+**Bottom line:** Zustand is the pragmatic choice today for most React apps — zero-config, tiny, works everywhere, and pairs perfectly with TanStack Query.
+Signals offer a more elegant reactivity model but require Babel transforms and are still maturing in the React ecosystem. Once TC39 signals land natively and React adopts them, the landscape may shift — but that's years away.
 
 ## Resources
 

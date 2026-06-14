@@ -1,4 +1,5 @@
-# Introduction to Software Design, Object Oriented Programming and Design Patterns
+# Introduction to Software Design, Object Oriented Programming and Design
+Patterns
 
 ## Background
 
@@ -17,12 +18,12 @@ Software Design -> OOP -> Best Practices & Design Patterns
 
 ## What is it with human wordings
 
-1. A container (usually call `class`) that has `states` (non-accessible attributes) and a set of `behaviours` (methods) that can fetch / manipulate those states
+1. container (usually call `class`) that has `states` (non-accessible attributes) and a set of `behaviours` (methods) that can fetch / manipulate those states
 
-2. An `object` must define the necessary states that `class` has specified before using the business rules in the `class`
+2. `object` must define the necessary states that `class` has specified before using the business rules in the `class`
 
 3. Level of reuse
-   - If existing class design satisfies the need, just use it
+   - If existing class design satisfies the need, use it
    - If only parts of it, can override some parts (i.e. `inheritance`) to create an extended `class`, then use it
 
 4. Contracts - If the business rules behave with the same flow, to ensure it works similarly, static checking can be considered to apply to the class. It could be the input parameters (number of parameters) and its types, output parameter and its types and the methods (number of methods) and the name of the methods
@@ -60,12 +61,12 @@ Software Design -> OOP -> Best Practices & Design Patterns
 
 - OOP
   - your unit is a CLASS, you want to reuse fully the existing CLASS or override some parts of it to partially reuse
-  - the flow level design is often LEAN but procedural
+  - flow level design is often LEAN but procedural
   - you hide some implementations because it is rarely used, or the risk of change is high. Some parts become very easy to change - usually because the business wants to change it frequently, while data driven design would be overkilled (a lot of data structure defined, persistent storage, additional CRUD on such configurations)
 - Functional
   - your unit is an independent function (pure functions), you want to reuse a lot of small explicit functions in procedural levels
-  - A data flow is very explicit in flow level
-  - The difficulty of change of each part is similar and linear
+  - data flow is very explicit in flow level
+  - difficulty of change of each part is similar and linear
 
 - OOP
   - Name methods as the usage because you need to encapsulate it
@@ -90,7 +91,7 @@ Software Design -> OOP -> Best Practices & Design Patterns
 
 ### Methods - How to name a private method
 
-- usage - it is just a part of the external method
+- usage - it is a part of the external method
 
 ### Methods - When to have a static method
 

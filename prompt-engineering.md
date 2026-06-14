@@ -7,8 +7,7 @@
 
 ### Temperature
 
-0 - deterministic
-2 - chaotic
+0 - deterministic 2 - chaotic
 
 ### Top-P
 
@@ -43,11 +42,9 @@ GenAI learns from nature language, video, images
 
 y = f(x)
 
-f = model
-x = input
-y = output
+f = model x = input y = output
 
-A foundation model
+foundation model
 
 <https://sgoldfarb2.github.io/practical-prompt-engineering> FrontendMaster Course - Practical Prompt Engineering
 
@@ -63,20 +60,19 @@ Good
 
 - Translation
 - General Knowledge
-- A simple script to do a single thing
+- simple script to do a single thing
 - Fix a line of bug in a program
 - Polish existing message
 
 Bad
 
 - Analysis
-- A series of tasks
+- series of tasks
 - Programming on a product
 
 ### One Shot Prompt
 
-Give an example and let the model learns it - you have full confident on this example
-Generative Work
+Give an example and let the model learns it - you have full confident on this example Generative Work
 
 Good
 
@@ -89,7 +85,7 @@ Bad
 ### Few Shot Prompt
 
 - provides a few examples, while you are not sure the actual styles and logic of it
-- a variety of level of examples, e.g. for programming
+- variety of level of examples, e.g. for programming
   - languages specification
   - programming style (OOP / functional)
   - with-(out) test cases

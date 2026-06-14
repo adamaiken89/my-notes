@@ -47,8 +47,7 @@ bulk data submission & data validation
 
  zombie child problem, React concurrency, and context loss
 
-interdependent states
-aggregated actions across states in different stores
+interdependent states aggregated actions across states in different stores
 
 ## LLM Assisted Engineering
 
@@ -68,7 +67,6 @@ Special properties children
 
 <parent children={<children />} />
 
-
 export const parent = ({ children }) => ...
 ```
 
@@ -78,8 +76,7 @@ dispatchSetState
 
 - nested vs normal props
 
-local states
--> state update -> components and its child components re-render
+local states -> state update -> components and its child components re-render
 
 -> share states upwards => (useRef & useImperativeHandle)
 
@@ -104,7 +101,6 @@ const ParenComponent = () => {
 
 //
 
-
 export const ChildComponent = () => {
   const [count, setCount] = useContext(CountContext)
 
@@ -124,7 +120,7 @@ Context can be overridden by nesting
 
 - Keep functional components reasonably small (for example, around 40 LOC when practical).
 - Consider sub-rendering and refactoring when rendering logic becomes hard to scan.
-- The goal is clarity: you should always understand what a component renders and why.
+- goal is clarity: you should always understand what a component renders and why.
 
 ## Features
 
@@ -192,10 +188,18 @@ Context can be overridden by nesting
 ## Preface
 
 There are very little information about frontend architecture
-No one cares but very important
-as a product, good user experience, clean UI, clear instruction, fast response can make a good product. however, more engineers focus on server side to build than frontend.
 
-building frontend is often painful, code quality is poor, modern frontend codebase is event-driven, need better and more effort to create automated test cases
+Engineers focus on server side persistent layer to build than frontend, while user first impression is frontend workflow
+
+- good user experience
+- clean UI
+- clear instruction
+- fast response
+
+
+Another extreme, building frontend is painful, code quality is poor, modern frontend codebase is event-driven.
+It requires need better, smarter and more efficient tool to verify the work
+The automated tests are still not common to cover most requirements. And they are slow compared to backend work
 
 ## The Challenge of Frontend Engineering
 
@@ -208,7 +212,7 @@ building frontend is often painful, code quality is poor, modern frontend codeba
   - e.g. react vs vue vs angular
   - hooks vs redux vs mobx vs zustand
 
-- The unhealthy loop because of less good material and discussion -> less good engineers and materials
+- unhealthy loop because of less good material and discussion -> less good engineers and materials
 
 - Integrated nature by server interfaces and technology provided
 

@@ -63,11 +63,8 @@ Formal grammar for CSS property/function values (MDN, W3C specs)
 
 ## Reference
 
-CSS in Depth
-<https://www.manning.com/books/css-in-depth-second-edition>
+CSS in Depth <https://www.manning.com/books/css-in-depth-second-edition>
 
-Mozilla CSS Reference
-<https://developer.mozilla.org/en-US/docs/Web/CSS>
+Mozilla CSS Reference <https://developer.mozilla.org/en-US/docs/Web/CSS>
 
-Refactoring UI
-<https://refactoringui.com>
+Refactoring UI <https://refactoringui.com>
