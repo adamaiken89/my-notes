@@ -1,5 +1,4 @@
-# Introduction to Software Design, Object Oriented Programming and Design
-Patterns
+# Introduction to Software Design, Object Oriented Programming, and Design Patterns
 
 ## Background
 
@@ -11,22 +10,49 @@ Software Design -> OOP -> Best Practices & Design Patterns
 -> The change of requirement is proportional to the amount of change of the system
 -> Facilitate to add new codes instead of modifying the existing codes as much as possible
 
-## Definition
+## OOP Definition (Human Terms)
 
-- is a debatable concept
-- two mainstream ways to describe OOP
+Debatable concept. Two mainstream descriptions:
 
-## What is it with human wordings
-
-1. container (usually call `class`) that has `states` (non-accessible attributes) and a set of `behaviours` (methods) that can fetch / manipulate those states
+1. Container (`class`) with `states` (private attributes) and `behaviours` (methods) that fetch/manipulate those states
 
 2. `object` must define the necessary states that `class` has specified before using the business rules in the `class`
 
-3. Level of reuse
-   - If existing class design satisfies the need, use it
-   - If only parts of it, can override some parts (i.e. `inheritance`) to create an extended `class`, then use it
+3. Levels of Reuse (from concrete to abstract)
 
-4. Contracts - If the business rules behave with the same flow, to ensure it works similarly, static checking can be considered to apply to the class. It could be the input parameters (number of parameters) and its types, output parameter and its types and the methods (number of methods) and the name of the methods
+   - **Level 0 (no reuse):** copy-paste. Highest duplication risk, no leverage.
+
+   - **Level 1 — Implementation Reuse (business logic bound):**
+        Unit of reuse is concrete class. Reuse code + behavior together.
+        - Direct use: instantiate existing class as-is
+        - Composition: delegate to existing class as member
+        - Inheritance: extend class, override parts
+        Low design effort, low flexibility. Business logic baked in.
+        Relevant DPs: Adapter, Decorator, Composite.
+
+   - **Level 2 — Contract Reuse (workflow reuse, business logic free):**
+        Unit of reuse is interface / abstract class. Reuse structure and flow.
+        - Define contract: method signatures, input/output types, method count
+        - Implementations plug in with different business logic
+        - Caller depends on contract, not concrete impl
+        Higher design effort, high flexibility. Runtime polymorphic.
+        Enables Dependency Inversion, Open-Closed Principle.
+        Relevant DPs: Strategy, Template Method, Observer, Command.
+
+   | Axis             | Level 1                  | Level 2                          |
+   | ---------------- | ------------------------ | -------------------------------- |
+   | Unit of reuse    | Concrete class           | Interface / abstract class       |
+   | What you get     | Code + behavior bundled  | Structure / flow only            |
+   | Binding          | Compile-time, concrete   | Runtime, polymorphic             |
+   | Flexibility      | Low (logic locked)       | High (swap impl freely)          |
+   | Change tolerance | Low — change propagates  | High — caller decoupled          |
+   | Design effort    | Low — instant reuse      | Higher — upfront contract design |
+   | Reduces          | Code volume (write less) | Coupling (change less)           |
+
+4. Contracts
+   - If business rules share same flow, static checking enforces consistent contract:
+     input/output parameter types, method count and names
+   - Compiler-enforced compliance (supports Level 2)
 
 ## Technical terms
 
@@ -35,7 +61,7 @@ Software Design -> OOP -> Best Practices & Design Patterns
    - Encapsulation - show only what you think are useful to outside world
    - Abstraction - group similar ideas together with INTERNAL states, outside world can interact with provided behaviours only (not states)
    - Inheritance - reuse existing functionality available without affecting existing business rules
-   - Polymorphism -
+   - Polymorphism - same interface, different behaviour; child class can replace parent without changing caller (enables Level 2 contract reuse)
 
 2. Five Principles of Good OOP (SOLID)
 
@@ -45,63 +71,28 @@ Software Design -> OOP -> Best Practices & Design Patterns
    - Interface Segregation Principle
    - Dependency Inversion Principle
 
-### P0 on OOP
+### Principle 0 on OOP
 
 - manage complexity
   - reduce unnecessary dependencies
   - separate infrastructure code from domain code
 
-### P1 on OOP
+### Principle 1 on OOP
 
 - reuse business rules - write less by reuse more
 
-### Think differently vs Functional Programming (FP)
+### OOP vs FP: Key Differences
 
-- Level of reuse is DIFFERENT
+| Axis              | OOP                                                                        | FP                                           |
+| ----------------- | -------------------------------------------------------------------------- | -------------------------------------------- |
+| Unit of reuse     | Class / Interface (Levels 1 & 2)                                           | Pure function                                |
+| Change tolerance  | Uneven — isolate volatile parts behind interfaces, rigid cold paths hidden | Uniform — each change costs similar effort   |
+| Flow visibility   | Encapsulated behind method calls — explicit at call site only              | Explicit data pipelines throughout           |
+| Abstraction cost  | High upfront (class/contract design), low per change                       | Low upfront, repeats via composition         |
+| Naming convention | Methods named by *usage/role* (what caller needs)                          | Functions named by *behavior* (what it does) |
+| When to choose    | Change concentrated in specific areas                                      | Change evenly distributed across system      |
 
-- OOP
-  - your unit is a CLASS, you want to reuse fully the existing CLASS or override some parts of it to partially reuse
-  - flow level design is often LEAN but procedural
-  - you hide some implementations because it is rarely used, or the risk of change is high. Some parts become very easy to change - usually because the business wants to change it frequently, while data driven design would be overkilled (a lot of data structure defined, persistent storage, additional CRUD on such configurations)
-- Functional
-  - your unit is an independent function (pure functions), you want to reuse a lot of small explicit functions in procedural levels
-  - data flow is very explicit in flow level
-  - difficulty of change of each part is similar and linear
-
-- OOP
-  - Name methods as the usage because you need to encapsulate it
-- Functional
-  - Name methods as how it works because you want people to reuse it
-
-## OOP (Java perspectives)
-
-### Methods - When to have a new method
-
-- for readability
-  - break down a use case into small methods and a main method calls those
-  - you can read main method easier
-
-- for reusability
-  - logics are so common and it reduces the work and errors repeating writing again and again
-  - change of methods will automatically affect all the methods which use it
-
-### Methods - When is private vs public
-
-- always consider public static methods from another class but within the same package
-
-### Methods - How to name a private method
-
-- usage - it is a part of the external method
-
-### Methods - When to have a static method
-
-- not that strict, do it when no internal dependency, some people prefer not
-
-### Methods - When to have a public static method
-
-- be avoided - in java context, it is more for factory object creation
-
-- boundary can be unclear on classes with public static methods, especially with business rules
+See [Java Guidelines](./java-guidelines.md) for Java-specific method conventions.
 
 ## Design Patterns
 
