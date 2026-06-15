@@ -12,7 +12,30 @@ Software Design -> OOP -> Best Practices & Design Patterns
 
 ## OOP Definition (Human Terms)
 
-Debatable concept. Two mainstream descriptions:
+Debatable concept. Two mainstream schools — different emphasis, not contradictory.
+
+### By 4 pillars
+
+Emphasis: what objects **contain** (data + methods). Structure and reuse.
+
+- Encapsulation - bundle data + methods that operate on it; restrict direct state access from outside
+- Abstraction - hide implementation details; expose only essential interface (what, not how)
+- Inheritance - reuse existing functionality available without affecting existing business rules
+- Polymorphism - same interface, different behaviour; child class can replace parent without changing caller (enables Level 2 contract reuse)
+
+### By Interactions
+
+Core OOP idea (Alan Kay): **messaging** between objects.
+
+- How objects communicate matters more than what they contain
+- Object A sends message (name + args) to Object B; B decides how to respond
+- Caller knows message format only, not B's internal state or implementation
+- Each object keeps its own state private — no direct access from outside
+- Message receiver determined at runtime — behavior depends on which object receives the message
+
+Same message, different receivers → different behavior (polymorphism at its core).
+
+### My interpretation
 
 1. Container (`class`) with `states` (private attributes) and `behaviours` (methods) that fetch/manipulate those states
 
@@ -56,20 +79,13 @@ Debatable concept. Two mainstream descriptions:
 
 ## Technical terms
 
-1. Four Pillars
+Five Principles of Good OOP (SOLID)
 
-   - Encapsulation - show only what you think are useful to outside world
-   - Abstraction - group similar ideas together with INTERNAL states, outside world can interact with provided behaviours only (not states)
-   - Inheritance - reuse existing functionality available without affecting existing business rules
-   - Polymorphism - same interface, different behaviour; child class can replace parent without changing caller (enables Level 2 contract reuse)
-
-2. Five Principles of Good OOP (SOLID)
-
-   - Single-responsibility Principle
-   - Open-closed Principle
-   - Liskov Substitution Principle
-   - Interface Segregation Principle
-   - Dependency Inversion Principle
+- Single-responsibility Principle
+- Open-closed Principle
+- Liskov Substitution Principle
+- Interface Segregation Principle
+- Dependency Inversion Principle
 
 ### Principle 0 on OOP
 
